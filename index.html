@@ -1,202 +1,167 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CS Quiz</title>
-  <style>
-    body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f6f6f6}
-    .wrap{max-width:900px;margin:0 auto;padding:16px}
-    .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-    h1{margin:0 0 8px;font-size:20px}
-    .meta{color:#555;font-size:14px;display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-    .qno{color:#666;font-size:14px;margin:10px 0 6px}
-    .question{font-size:18px;line-height:1.7;margin:0 0 12px}
-    .options{display:grid;gap:10px}
-    .opt{border:1px solid #ddd;border-radius:12px;padding:10px 12px;cursor:pointer;background:#fff}
-    .opt:hover{background:#fafafa}
-    .opt.disabled{cursor:not-allowed;opacity:.95}
-    .opt.correct{border-color:#2e7d32;background:#e8f5e9}
-    .opt.wrong{border-color:#c62828;background:#ffebee}
-    .feedback{margin-top:12px;padding:10px 12px;border-radius:12px;display:none}
-    .feedback.ok{background:#e8f5e9;color:#1b5e20;display:block}
-    .feedback.no{background:#ffebee;color:#b71c1c;display:block}
-    .actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
-    button{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;background:#111;color:#fff;font-size:14px}
-    button.secondary{background:#666}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
-    .bar{height:10px;width:0%;background:#111}
-    .result{text-align:center}
-    .small{color:#555;font-size:14px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Communication Quiz</title>
+
+<style>
+body{font-family:Arial;margin:0;background:#f5f5f5}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+h1{text-align:center}
+.question{font-size:18px;margin-bottom:15px}
+.option{padding:10px;border:1px solid #ccc;border-radius:8px;margin-bottom:8px;cursor:pointer}
+.option:hover{background:#f0f0f0}
+.correct{background:#d4edda;border-color:#28a745}
+.wrong{background:#f8d7da;border-color:#dc3545}
+button{padding:10px 15px;border:none;border-radius:8px;background:#000;color:#fff;cursor:pointer}
+button:disabled{opacity:.5}
+.result{font-weight:bold;margin-top:15px}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>CS Quiz</h1>
+<div class="container">
+<div class="card">
 
-      <div class="meta">
-        <div id="status">جاهز</div>
-        <div>النتيجة: <b id="score">0</b> / <b id="total">0</b></div>
-      </div>
+<h1>كويز مهارات الاتصال</h1>
 
-      <div class="progress"><div class="bar" id="bar"></div></div>
+<div id="quiz">
+<div id="question" class="question"></div>
+<div id="options"></div>
+<button id="next" disabled>التالي</button>
+</div>
 
-      <div id="quiz">
-        <div class="qno" id="qno"></div>
-        <p class="question" id="qtext"></p>
-        <div class="options" id="opts"></div>
+<div id="final" style="display:none">
+<h2>انتهى الاختبار</h2>
+<p id="score"></p>
+<button onclick="restart()">إعادة الاختبار</button>
+</div>
 
-        <div class="feedback" id="feedback"></div>
-
-        <div class="actions">
-          <button class="secondary" id="restartBtn">إعادة</button>
-          <button id="nextBtn" disabled>التالي</button>
-        </div>
-      </div>
-
-      <div id="final" class="result" style="display:none;">
-        <h2>انتهى الاختبار</h2>
-        <p class="small">درجتك: <b id="finalScore"></b></p>
-        <button id="restartBtn2">ابدأ من جديد</button>
-      </div>
-    </div>
-  </div>
+</div>
+</div>
 
 <script>
-/*
-  مهم جدًا:
-  answer يجب أن يكون رقم الخيار الصحيح:
-  0 = أول خيار
-  1 = ثاني خيار
-  2 = ثالث خيار
-  3 = رابع خيار
 
-  إن وضعت answer = null فلن يسمح النظام بالتصحيح (سأجعله مؤقتًا 0 لكي يعمل الآن).
-*/
+// ======================
+// ضع الإجابات الصحيحة هنا (0 = أ ، 1 = ب ، 2 = ج ، 3 = د)
+// ======================
 
-// ضع أسئلتك هنا (يمكنك استبدالها بمصفوفة أسئلتك الكاملة)
 const questions = [
-  { text: "يشير نمط التشغيل الحكومي في وسائل الإعلام إلى:", options: ["وسائل الإعلام التي يمتلكها الأفراد لتحقيق الربح","وسائل الإعلام التي تمتلكها وتديرها الدولة","وسائل الإعلام الممولة من الإعلانات فقط","وسائل التواصل الاجتماعي المستقلة"], answer: 0 },
-  { text: "أحد خصائص الأزمات المالية هو أنها قد تحدث بشكل:", options: ["تدريجي فقط","مفاجئ أو تدريجي","بطيء ومتوقع","دائم ومستقر"], answer: 0 },
-  { text: "من مهام إدارة العلاقات العامة أثناء الأزمات المالية:", options: ["وقف الأنشطة الإعلامية كلها","نشر الشائعات للتخفيف من الأزمة","نقل المعلومات الدقيقة والموثوقة","إدارة الأزمات"], answer: 0 }
+{ text:"يشير نمط التشغيل الحكومي في وسائل الإعلام إلى:", options:["وسائل الإعلام التي يمتلكها الأفراد لتحقيق الربح","وسائل الإعلام التي تمتلكها وتديرها الدولة","وسائل الإعلام الممولة من الإعلانات فقط","وسائل التواصل الاجتماعي المستقلة"], answer:0 },
+{ text:"أحد خصائص الأزمات المالية هو أنها قد تحدث بشكل:", options:["تدريجي فقط","مفاجئ أو تدريجي","بطيء ومتوقع","دائم ومستقر"], answer:0 },
+{ text:"من مهام إدارة العلاقات العامة أثناء الأزمات المالية:", options:["وقف الأنشطة الإعلامية كلها","نشر الشائعات للتخفيف من الأزمة","نقل المعلومات الدقيقة والموثوقة","إدارة الأزمات"], answer:0 },
+{ text:"من أمثلة وسائل الإعلام الحكومية:", options:["صفحات التواصل الاجتماعي الخاصة","القنوات الوطنية الرسمية","المجلات التجارية الخاصة","الصحف الإعلانية"], answer:0 },
+{ text:"من أبرز التحديات التي تواجه إدارة العلاقات العامة أثناء الأزمات المالية:", options:["ضعف المنافسة","انتشار الشائعات بسرعة عبر منصات التواصل","زيادة الأرباح السريعة","قلة استخدام التكنولوجيا"], answer:0 },
+{ text:"الاعتماد المفرط على مصدر دخل واحد يعد من:", options:["خصائص الأزمات المالية","أسباب الأزمات المالية","نتائج الأزمات المالية","أدوات مواجهة الأزمات"], answer:0 },
+{ text:"تأثير الأزمات المالية لا يقتصر على الجانب الاقتصادي فقط، بل يمتد ليشمل:", options:["النواحي الاجتماعية والثقافية أيضًا","الجانب الإعلامي فقط","القرارات الأمنية","قطاع التعليم"], answer:0 },
+{ text:"تقوم مرحلة المواجهة في إدارة الأزمة على:", options:["بناء فرق العمل ووضع السيناريوهات","تنفيذ الخطط والتواصل المستمر مع الجمهور","تقييم الأداء بعد انتهاء الأزمة","جمع البيانات الأولية فقط"], answer:0 },
+{ text:"قد يؤدي ضعف الاستجابة المبكرة للمؤشرات التحذيرية إلى:", options:["تجنب الأزمة المالية","استمرار الاستقرار المالي","تفاقم الأزمة عند وقوعها","زيادة الثقة بالمؤسسة"], answer:0 },
+{ text:"العلاقة بين الشفافية والمصداقية أثناء الأزمات يمكن وصفها بأنها:", options:["متضادة","تكاملية","غير مهمة","مؤقتة فقط"], answer:0 },
+
+{ text:"في نمط التشغيل الخاص لوسائل الإعلام، يمكن أن تتأثر استقلالية المحتوى بسبب:", options:["الضغوط التجارية والإعلانية","ضعف المتابعة الحكومية","قلة عدد القنوات","اعتماد المؤسسة على التمويل الحكومي"], answer:0 },
+{ text:"مرحلة التفاعل في إدارة الأزمات تهدف إلى:", options:["بناء فريق العمل","المراجعة والتقييم لتطوير الخطط المستقبلية","التواصل الأولي مع الجمهور","جمع البيانات عن المنافسين"], answer:0 },
+{ text:"في أثناء الأزمة المالية، ضعف التواصل قد يؤدي إلى:", options:["عودة الثقة سريعًا","تقليل حجم الأزمة","تفاقم الأزمة وفقدان السمعة","زيادة الإيرادات"], answer:0 },
+{ text:"لماذا تعتبر إدارة العلاقات العامة \"وظيفة استراتيجية\" خلال الأزمات؟", options:["لأنها تركز على التقارير المالية","لأنها مسؤولة عن نقل الحقائق للجمهور وبناء الثقة على المدى البعيد","لأنها تنسق بين الإدارات الفنية فقط","لأنها تختص بالإعلانات المدفوعة"], answer:0 },
+{ text:"استمرارية التواصل مع الجمهور أثناء الأزمة تعد من عناصر:", options:["مرحلة المواجهة","المرحلة التمهيدية","مرحلة التفاعل","مرحلة ما بعد الأزمة"], answer:0 },
+{ text:"أي مما يلي مثال على وسائل الإعلام الحكومية؟", options:["منصات البث المدفوعة","التلفزيون الحكومي","قناة يملكها أفراد","صحيفة خاصة"], answer:0 },
+{ text:"الهدف الأساسي لوسائل الإعلام الخاصة هو:", options:["نشر الرسائل الرسمية","تحقيق الأرباح","تقليل الإعلانات","خدمة الموظفين"], answer:0 },
+{ text:"من آثار الأزمات المالية على المؤسسة:", options:["زيادة الثقة دائمًا","خسارة ثقة العملاء","زيادة الاستقرار الوظيفي","ارتفاع السمعة"], answer:0 },
+{ text:"العلاقات العامة تركز بشكل أساسي على:", options:["الإنتاج","التواصل مع الجمهور","المحاسبة","العمليات التشغيلية"], answer:0 },
+{ text:"أي مما يلي يعد من تحديات العلاقات العامة أثناء الأزمة؟", options:["وفرة الموارد","انخفاض توقعات الجمهور","انتشار الشائعات بسرعة","عدم الحاجة للتواصل"], answer:0 },
+
+{ text:"ما المقصود بنمط التشغيل الحكومي لوسائل الإعلام؟", options:["تملكه شركات خاصة","تملكه الدولة وتموله من الميزانية العامة","يعتمد على التبرعات","يعمل بدون تمويل"], answer:0 },
+{ text:"أي مما يلي يعد من خصائص نمط التشغيل الخاص؟", options:["التركيز على الرسائل الوطنية","الاعتماد على الإعلانات والاشتراكات","تمويل حكومي كامل","غياب المنافسة"], answer:0 },
+{ text:"الأزمات المالية لا تقتصر على نقص الأموال فقط بل تشمل:", options:["عوامل تؤثر على قدرة المؤسسة على الاستمرار","انخفاض عدد الموظفين فقط","خسارة العملاء فقط","ارتفاع التكاليف فقط"], answer:0 },
+{ text:"من أهداف إدارة العلاقات العامة:", options:["زيادة الضرائب","بناء صورة إيجابية للمؤسسة","تقليل عدد العملاء","إيقاف التواصل مع الجمهور"], answer:0 },
+{ text:"أي مما يلي يعد سببًا داخليًا للأزمات المالية؟", options:["الركود الاقتصادي","سوء التخطيط المالي","تغيرات السوق العالمية","تقلب أسعار السلع"], answer:0 },
+{ text:"من خصائص الأزمات المالية أنها:", options:["تؤثر فقط على الجانب المالي","لا تؤثر على السمعة","تتطلب استجابات سريعة وقرارات صعبة","تحدث ببطء دائمًا"], answer:0 },
+{ text:"أي أداة من أدوات العلاقات العامة تستخدم لنقل المعلومات بسرعة أثناء الأزمة؟", options:["اللوحات الإعلانية","منصات التواصل الاجتماعي","الرسائل الورقية","الاجتماعات السنوية"], answer:0 },
+{ text:"المرحلة التي يتم فيها تقييم الأداء بعد الأزمة تسمى:", options:["مرحلة المواجهة","مرحلة الاستعداد","مرحلة التعافي","مرحلة التخطيط"], answer:0 },
+{ text:"لماذا قد يواجه الإعلام الحكومي تحديات في الاستقلالية التحريرية؟", options:["بسبب كثرة الإعلانات","بسبب ارتباطه بالسياسات والتوجيهات الحكومية","بسبب ضعف الجمهور","بسبب قلة الموارد البشرية"], answer:0 },
+{ text:"كيف تؤثر الأزمات المالية على التسويق والعلاقات العامة؟", options:["زيادتها بشكل دائم","إيقافها نهائيًا","تقليص ميزانياتها مما يضعف التواصل","عدم تأثرها"], answer:0 },
+
+{ text:"أي مما يلي يوضح العلاقة بين الشفافية وثقة الجمهور؟", options:["الشفافية تقلل الثقة","لا توجد علاقة","الشفافية تعزز الثقة وتقلل الشائعات","الشفافية تؤثر فقط داخليًا"], answer:0 },
+{ text:"إذا ركزت مؤسسة إعلامية على زيادة المشاهدات حتى لو أثر ذلك على جودة المحتوى، فهذا يشير إلى:", options:["نمط حكومي","نمط خاص يركز على الربحية","نمط غير ربحي","نمط مختلط"], answer:0 },
+{ text:"عند انتشار شائعات أثناء أزمة مالية، أهم دور للعلاقات العامة هو:", options:["تجاهل الشائعات","نشر معلومات دقيقة لإدارة تدفق المعلومات","إيقاف التواصل","تقليل الشفافية"], answer:0 },
+{ text:"لماذا يعد التواصل الفعال عاملًا حيويًا لبقاء المؤسسة أثناء الأزمة؟", options:["لأنه يزيد التكاليف","لأنه يحافظ على ثقة أصحاب المصلحة","لأنه يغير الإدارة","لأنه يقلل المنافسة"], answer:0 },
+{ text:"نجاح حملة العلاقات العامة في دراسة الحالة يدل ضمنيًا على أن:", options:["التعويضات وحدها كافية","التواصل الواضح يعيد بناء الثقة تدريجيًا","الأزمة انتهت فورًا","السمعة لا تتأثر بالأزمات"], answer:0 },
+{ text:"الاعتماد المفرط على مصدر دخل واحد قد يؤدي إلى:", options:["استقرار مالي دائم","أزمة مالية محتملة","زيادة الأرباح فقط","تحسين السمعة"], answer:0 },
+{ text:"أي مرحلة تتضمن بناء خطط وسيناريوهات قبل حدوث الأزمة؟", options:["المواجهة","التعافي","الاستعداد","التقييم"], answer:0 },
+{ text:"انخفاض القيمة السوقية للمؤسسة خلال الأزمة يدل على:", options:["تحسن الأداء","تأثر ثقة المستثمرين","زيادة الطلب","نجاح التسويق"], answer:0 },
+{ text:"لماذا قد تؤثر المصالح التجارية على استقلالية المحتوى في الإعلام الخاص؟", options:["لأن التمويل حكومي","لأن الهدف الأساسي ربحي","بسبب ضعف الجمهور","بسبب القوانين فقط"], answer:0 },
+{ text:"أي مما يلي يوضح دور العلاقات العامة كحلقة وصل؟", options:["إدارة العمليات","نقل المعلومات بين المؤسسة وجمهورها","تحديد الأسعار","إدارة الموارد البشرية فقط"], answer:0 },
+
+{ text:"اتخاذ قرارات سريعة أثناء الأزمة يعود إلى:", options:["بطء الأحداث","طبيعة الأزمات المتسارعة","قلة المعلومات","عدم وجود مخاطر"], answer:0 },
+{ text:"إذا قلت ميزانية التسويق أثناء الأزمة، فمن المتوقع أن:", options:["يزيد التواصل مع الجمهور","يضعف الحضور الإعلامي للمؤسسة","تتحسن السمعة مباشرة","لا يتأثر شيء"], answer:0 },
+{ text:"تركيز العلاقات العامة على تصحيح المعلومات يعني أن المؤسسة:", options:["تحاول إخفاء الأزمة","تدير السمعة بشكل استباقي","توقف التواصل","تقلل الشفافية"], answer:0 },
+{ text:"وجود خطة تواصل قبل الأزمة يدل على أن المؤسسة:", options:["تتوقع الفشل","تتبع إدارة أزمات احترافية","تعتمد على الحظ","لا تهتم بالجمهور"], answer:0 },
+{ text:"التأكيد على توازن مصلحة المؤسسة واحتياجات الجمهور يشير إلى:", options:["دور تسويقي فقط","دور استراتيجي للعلاقات العامة","دور مالي","دور تشغيلي"], answer:0 }
 ];
 
-// --------- من هنا لا تعدّل عادة ----------
-const totalEl = document.getElementById("total");
-const scoreEl = document.getElementById("score");
-const statusEl = document.getElementById("status");
-const qnoEl = document.getElementById("qno");
-const qtextEl = document.getElementById("qtext");
-const optsEl = document.getElementById("opts");
-const feedbackEl = document.getElementById("feedback");
-const nextBtn = document.getElementById("nextBtn");
-const restartBtn = document.getElementById("restartBtn");
-const restartBtn2 = document.getElementById("restartBtn2");
-const quizEl = document.getElementById("quiz");
-const finalEl = document.getElementById("final");
-const finalScoreEl = document.getElementById("finalScore");
-const barEl = document.getElementById("bar");
-
-totalEl.textContent = questions.length;
-
-let idx = 0;
+// ======================
+let current = 0;
 let score = 0;
-let locked = false;
 
-function updateProgress() {
-  const pct = Math.round((idx / questions.length) * 100);
-  barEl.style.width = pct + "%";
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const nextBtn = document.getElementById("next");
+const finalEl = document.getElementById("final");
+const quizEl = document.getElementById("quiz");
+const scoreEl = document.getElementById("score");
+
+function loadQuestion(){
+const q = questions[current];
+questionEl.textContent = "السؤال " + (current+1) + " / " + questions.length + " : " + q.text;
+optionsEl.innerHTML = "";
+nextBtn.disabled = true;
+
+q.options.forEach((opt,i)=>{
+const div = document.createElement("div");
+div.textContent = opt;
+div.classList.add("option");
+div.onclick = ()=>selectAnswer(div,i);
+optionsEl.appendChild(div);
+});
 }
 
-function renderQuestion() {
-  locked = false;
-  nextBtn.disabled = true;
-  feedbackEl.className = "feedback";
-  feedbackEl.style.display = "none";
-  optsEl.innerHTML = "";
+function selectAnswer(element,index){
+const correct = questions[current].answer;
+const options = document.querySelectorAll(".option");
+options.forEach(o=>o.onclick=null);
 
-  const q = questions[idx];
-  qnoEl.textContent = `السؤال ${idx + 1} من ${questions.length}`;
-  qtextEl.textContent = q.text;
-  statusEl.textContent = "اختر إجابة";
-
-  q.options.forEach((optText, i) => {
-    const div = document.createElement("div");
-    div.className = "opt";
-    div.textContent = optText;
-    div.addEventListener("click", () => onChoose(i, div));
-    optsEl.appendChild(div);
-  });
-
-  updateProgress();
+if(index===correct){
+element.classList.add("correct");
+score++;
+}else{
+element.classList.add("wrong");
+options[correct].classList.add("correct");
+}
+nextBtn.disabled=false;
 }
 
-function onChoose(choiceIndex, chosenEl) {
-  if (locked) return;
-  locked = true;
+nextBtn.onclick=()=>{
+current++;
+if(current<questions.length){
+loadQuestion();
+}else{
+quizEl.style.display="none";
+finalEl.style.display="block";
+scoreEl.textContent="درجتك: "+score+" من "+questions.length;
+}
+};
 
-  const q = questions[idx];
-  const optionEls = [...document.querySelectorAll(".opt")];
-  optionEls.forEach(el => el.classList.add("disabled"));
-
-  const correctIndex = q.answer;
-
-  if (choiceIndex === correctIndex) {
-    score += 1;
-    scoreEl.textContent = score;
-    chosenEl.classList.add("correct");
-    feedbackEl.textContent = "إجابة صحيحة ✅";
-    feedbackEl.classList.add("ok");
-  } else {
-    chosenEl.classList.add("wrong");
-    optionEls[correctIndex].classList.add("correct");
-    feedbackEl.textContent = "إجابة خاطئة ❌ — الإجابة الصحيحة مميزة باللون الأخضر.";
-    feedbackEl.classList.add("no");
-  }
-
-  feedbackEl.style.display = "block";
-  nextBtn.disabled = false;
-  nextBtn.textContent = (idx === questions.length - 1) ? "إنهاء" : "التالي";
-  statusEl.textContent = "تم التصحيح";
+function restart(){
+current=0;
+score=0;
+finalEl.style.display="none";
+quizEl.style.display="block";
+loadQuestion();
 }
 
-function next() {
-  if (!locked) return;
-  if (idx < questions.length - 1) {
-    idx += 1;
-    renderQuestion();
-  } else {
-    showFinal();
-  }
-}
-
-function showFinal() {
-  quizEl.style.display = "none";
-  finalEl.style.display = "block";
-  barEl.style.width = "100%";
-  finalScoreEl.textContent = `${score} / ${questions.length}`;
-}
-
-function restart() {
-  idx = 0;
-  score = 0;
-  locked = false;
-  scoreEl.textContent = "0";
-  totalEl.textContent = questions.length;
-  finalEl.style.display = "none";
-  quizEl.style.display = "block";
-  barEl.style.width = "0%";
-  renderQuestion();
-}
-
-nextBtn.addEventListener("click", next);
-restartBtn.addEventListener("click", restart);
-restartBtn2.addEventListener("click", restart);
-
-renderQuestion();
+loadQuestion();
 </script>
+
 </body>
 </html>
