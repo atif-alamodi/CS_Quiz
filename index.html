@@ -1,229 +1,489 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>كويز مهارات الاتصال - المحاضرة الأولى</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 0; background:#f7f7f7; }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
-    .card { background:#fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
-    h1 { font-size: 20px; margin: 0 0 8px; }
-    .meta { color:#555; font-size: 14px; margin-bottom: 12px; display:flex; gap:12px; flex-wrap:wrap;}
-    .qno { color:#666; font-size: 14px; margin-bottom: 8px; }
-    .question { font-size: 18px; margin: 0 0 12px; line-height: 1.6; }
-    .options { display: grid; gap: 10px; }
-    .opt {
-      border: 1px solid #ddd; border-radius: 10px; padding: 10px 12px;
-      cursor: pointer; background:#fff; text-align: right;
-    }
-    .opt:hover { background:#fafafa; }
-    .opt.disabled { cursor: not-allowed; opacity: .9; }
-    .opt.correct { border-color: #2e7d32; background: #e8f5e9; }
-    .opt.wrong   { border-color: #c62828; background: #ffebee; }
-    .feedback { margin-top: 12px; padding: 10px 12px; border-radius: 10px; display:none; }
-    .feedback.ok { background:#e8f5e9; color:#1b5e20; display:block; }
-    .feedback.no { background:#ffebee; color:#b71c1c; display:block; }
-    .actions { display:flex; gap:10px; justify-content: space-between; margin-top: 14px; flex-wrap:wrap; }
-    button {
-      border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer;
-      background:#111; color:#fff; font-size: 14px;
-    }
-    button.secondary { background:#666; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-    .result { text-align:center; }
-    .result h2 { margin: 0 0 8px; }
-    .small { color:#555; font-size: 14px; }
-    .progress { height: 10px; background:#eee; border-radius:999px; overflow:hidden; }
-    .bar { height: 10px; width:0%; background:#111; }
-  </style>
-</head>
+const questions = [
 
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>كويز مهارات الاتصال (المحاضرة الأولى)</h1>
-      <div class="meta">
-        <div id="status">جاهز</div>
-        <div>النتيجة: <b id="score">0</b> / <b id="total">0</b></div>
-      </div>
-      <div class="progress" aria-label="progress"><div class="bar" id="bar"></div></div>
+{
+text: "يشير نمط التشغيل الحكومي في وسائل الإعلام إلى:",
+options: [
+"وسائل الإعلام التي يمتلكها الأفراد لتحقيق الربح",
+"وسائل الإعلام التي تمتلكها وتديرها الدولة",
+"وسائل الإعلام الممولة من الإعلانات فقط",
+"وسائل التواصل الاجتماعي المستقلة"
+],
+answer: 0
+},
 
-      <div id="quiz">
-        <div class="qno" id="qno"></div>
-        <p class="question" id="qtext"></p>
-        <div class="options" id="opts"></div>
+{
+text: "أحد خصائص الأزمات المالية هو أنها قد تحدث بشكل:",
+options: [
+"تدريجي فقط",
+"مفاجئ أو تدريجي",
+"بطيء ومتوقع",
+"دائم ومستقر"
+],
+answer: 0
+},
 
-        <div class="feedback" id="feedback"></div>
+{
+text: "من مهام إدارة العلاقات العامة أثناء الأزمات المالية:",
+options: [
+"وقف الأنشطة الإعلامية كلها",
+"نشر الشائعات للتخفيف من الأزمة",
+"نقل المعلومات الدقيقة والموثوقة",
+"إدارة الأزمات"
+],
+answer: 0
+},
 
-        <div class="actions">
-          <button class="secondary" id="restartBtn">إعادة</button>
-          <button id="nextBtn" disabled>التالي</button>
-        </div>
-      </div>
+{
+text: "من عناصر عملية الاتصال:",
+options: [
+"المرسل",
+"الرسالة",
+"المستقبل",
+"جميع ما سبق"
+],
+answer: 0
+},
 
-      <div id="final" class="result" style="display:none;">
-        <h2>انتهى الاختبار</h2>
-        <p class="small">درجتك: <b id="finalScore"></b></p>
-        <button id="restartBtn2">ابدأ من جديد</button>
-      </div>
-    </div>
-  </div>
+{
+text: "التغذية الراجعة في الاتصال تعني:",
+options: [
+"إعادة إرسال الرسالة",
+"رد فعل المستقبل على الرسالة",
+"تجاهل الرسالة",
+"تشويش الرسالة"
+],
+answer: 0
+},
 
-  <script>
-    // 1) ضع الأسئلة هنا
-    // IMPORTANT: answer هو رقم الخيار الصحيح (0 = أول خيار، 1 = ثاني خيار، ...)
+{
+text: "الاتصال الفعال يعتمد على:",
+options: [
+"وضوح الرسالة",
+"اختيار الوسيلة المناسبة",
+"فهم المستقبل",
+"جميع ما سبق"
+],
+answer: 0
+},
 
-    const questions = [
-      {
-        text: "يشير نمط التشغيل الحكومي في وسائل الإعلام إلى:",
-        options: [
-          "وسائل الإعلام التي يمتلكها الأفراد لتحقيق الربح",
-          "وسائل الإعلام التي تمتلكها وتديرها الدولة",
-          "وسائل الإعلام الممولة من الإعلانات فقط",
-          "وسائل التواصل الاجتماعي المستقلة"
-        ],
-        answer: 1 // عدّلها إذا كان مفتاح الإجابة مختلفًا
-      },
-      {
-        text: "أحد خصائص الأزمات المالية هو أنها قد تحدث بشكل:",
-        options: [
-          "تدريجي فقط",
-          "مفاجئ أو تدريجي",
-          "بطيء ومتوقع",
-          "دائم ومستقر"
-        ],
-        answer: 1
-      },
-      {
-        text: "من مهام إدارة العلاقات العامة أثناء الأزمات المالية:",
-        options: [
-          "وقف الأنشطة الإعلامية كلها",
-          "نشر الشائعات للتخفيف من الأزمة",
-          "نقل المعلومات الدقيقة والموثوقة",
-          "إدارة الأزمات"
-        ],
-        answer: 2
-      }
-      // أضف بقية الأسئلة بنفس الشكل من ملف PDF
-    ];
+{
+text: "من معوقات الاتصال:",
+options: [
+"الضوضاء",
+"سوء الفهم",
+"التحيز",
+"جميع ما سبق"
+],
+answer: 0
+},
 
-    // ----- من هنا لا تحتاج تعدّل شيئًا عادة -----
-    const totalEl = document.getElementById("total");
-    const scoreEl = document.getElementById("score");
-    const statusEl = document.getElementById("status");
-    const qnoEl = document.getElementById("qno");
-    const qtextEl = document.getElementById("qtext");
-    const optsEl = document.getElementById("opts");
-    const feedbackEl = document.getElementById("feedback");
-    const nextBtn = document.getElementById("nextBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const restartBtn2 = document.getElementById("restartBtn2");
-    const quizEl = document.getElementById("quiz");
-    const finalEl = document.getElementById("final");
-    const finalScoreEl = document.getElementById("finalScore");
-    const barEl = document.getElementById("bar");
+{
+text: "الاتصال غير اللفظي يشمل:",
+options: [
+"لغة الجسد",
+"تعابير الوجه",
+"نبرة الصوت",
+"جميع ما سبق"
+],
+answer: 0
+},
 
-    totalEl.textContent = questions.length;
+{
+text: "الاستماع الفعال يتطلب:",
+options: [
+"التركيز",
+"المقاطعة المستمرة",
+"عدم الاهتمام",
+"تجاهل المتحدث"
+],
+answer: 0
+},
 
-    let idx = 0;
-    let score = 0;
-    let locked = false;
+{
+text: "من أهداف الاتصال التنظيمي:",
+options: [
+"تنسيق الجهود",
+"تحقيق الفوضى",
+"تقليل الإنتاجية",
+"إخفاء المعلومات"
+],
+answer: 0
+},
 
-    function updateProgress() {
-      const pct = Math.round(((idx) / questions.length) * 100);
-      barEl.style.width = pct + "%";
-    }
+// ----- أكمل بنفس النمط حتى السؤال 45 -----
 
-    function renderQuestion() {
-      locked = false;
-      nextBtn.disabled = true;
-      feedbackEl.className = "feedback";
-      feedbackEl.style.display = "none";
-      optsEl.innerHTML = "";
+{
+text: "الاتصال الصاعد يكون من:",
+options: [
+"الموظفين إلى الإدارة",
+"الإدارة إلى الموظفين",
+"قسم إلى قسم",
+"العملاء إلى الشركة"
+],
+answer: 0
+},
 
-      const q = questions[idx];
-      qnoEl.textContent = `السؤال ${idx + 1} من ${questions.length}`;
-      qtextEl.textContent = q.text;
-      statusEl.textContent = "اختر إجابة";
+{
+text: "الاتصال النازل يكون من:",
+options: [
+"الإدارة إلى الموظفين",
+"الموظفين إلى الإدارة",
+"العملاء",
+"المنافسين"
+],
+answer: 0
+},
 
-      q.options.forEach((optText, i) => {
-        const div = document.createElement("div");
-        div.className = "opt";
-        div.textContent = optText;
-        div.addEventListener("click", () => onChoose(i, div));
-        optsEl.appendChild(div);
-      });
+{
+text: "الاتصال الأفقي يكون بين:",
+options: [
+"موظفين في نفس المستوى",
+"مدير وموظف",
+"شركة وعميل",
+"إدارة عليا فقط"
+],
+answer: 0
+},
 
-      updateProgress();
-    }
+{
+text: "من خصائص الاتصال الجيد:",
+options: [
+"الوضوح",
+"الإيجاز",
+"الدقة",
+"جميع ما سبق"
+],
+answer: 0
+},
 
-    function onChoose(choiceIndex, chosenEl) {
-      if (locked) return;
-      locked = true;
+{
+text: "الرسالة في عملية الاتصال هي:",
+options: [
+"المحتوى المنقول",
+"الشخص المتحدث",
+"الوسيلة",
+"الضوضاء"
+],
+answer: 0
+},
 
-      const q = questions[idx];
-      const optionEls = [...document.querySelectorAll(".opt")];
-      optionEls.forEach(el => el.classList.add("disabled"));
+{
+text: "المرسل في عملية الاتصال هو:",
+options: [
+"من يرسل الرسالة",
+"من يستقبل الرسالة",
+"الوسيلة",
+"البيئة"
+],
+answer: 0
+},
 
-      const correctIndex = q.answer;
+{
+text: "المستقبل هو:",
+options: [
+"من يتلقى الرسالة",
+"من يرسلها",
+"الوسيلة",
+"المرجع"
+],
+answer: 0
+},
 
-      if (choiceIndex === correctIndex) {
-        score += 1;
-        scoreEl.textContent = score;
-        chosenEl.classList.add("correct");
-        feedbackEl.textContent = "✅ إجابة صحيحة";
-        feedbackEl.classList.add("ok");
-        statusEl.textContent = "تم التصحيح";
-      } else {
-        chosenEl.classList.add("wrong");
-        optionEls[correctIndex].classList.add("correct");
-        feedbackEl.textContent = "❌ إجابة خاطئة — الإجابة الصحيحة مميزة باللون الأخضر.";
-        feedbackEl.classList.add("no");
-        statusEl.textContent = "تم التصحيح";
-      }
+{
+text: "الوسيلة في الاتصال تعني:",
+options: [
+"القناة المستخدمة لنقل الرسالة",
+"الرسالة نفسها",
+"المرسل",
+"المستقبل"
+],
+answer: 0
+},
 
-      feedbackEl.style.display = "block";
-      nextBtn.disabled = false;
+{
+text: "الضوضاء في الاتصال تعني:",
+options: [
+"أي عامل يشوش الرسالة",
+"الموسيقى",
+"الصوت العالي فقط",
+"الرسالة"
+],
+answer: 0
+},
 
-      if (idx === questions.length - 1) nextBtn.textContent = "إنهاء";
-      else nextBtn.textContent = "التالي";
-    }
+{
+text: "من أمثلة الاتصال الشفهي:",
+options: [
+"المحادثة",
+"البريد الإلكتروني",
+"التقارير",
+"الإعلانات المطبوعة"
+],
+answer: 0
+},
 
-    function next() {
-      if (!locked) return;
-      if (idx < questions.length - 1) {
-        idx += 1;
-        renderQuestion();
-      } else {
-        showFinal();
-      }
-    }
+{
+text: "من أمثلة الاتصال الكتابي:",
+options: [
+"التقارير",
+"المحادثة",
+"الاجتماع",
+"المكالمة الهاتفية"
+],
+answer: 0
+},
 
-    function showFinal() {
-      quizEl.style.display = "none";
-      finalEl.style.display = "block";
-      barEl.style.width = "100%";
-      finalScoreEl.textContent = `${score} / ${questions.length}`;
-    }
+{
+text: "الاتصال الجماهيري يوجه إلى:",
+options: [
+"عدد كبير من الناس",
+"فرد واحد",
+"إدارة واحدة",
+"قسم معين"
+],
+answer: 0
+},
 
-    function restart() {
-      idx = 0;
-      score = 0;
-      locked = false;
-      scoreEl.textContent = "0";
-      totalEl.textContent = questions.length;
-      finalEl.style.display = "none";
-      quizEl.style.display = "block";
-      barEl.style.width = "0%";
-      renderQuestion();
-    }
+{
+text: "الاتصال الشخصي يكون بين:",
+options: [
+"شخصين أو أكثر مباشرة",
+"شركة وجمهور",
+"إذاعة ومستمعين",
+"تلفاز ومشاهدين"
+],
+answer: 0
+},
 
-    nextBtn.addEventListener("click", next);
-    restartBtn.addEventListener("click", restart);
-    restartBtn2.addEventListener("click", restart);
+{
+text: "من فوائد الاتصال الفعال:",
+options: [
+"تحسين العلاقات",
+"زيادة سوء الفهم",
+"انخفاض الأداء",
+"ضعف التعاون"
+],
+answer: 0
+},
 
-    renderQuestion();
-  </script>
-</body>
-</html>
+{
+text: "الذكاء العاطفي يساعد في:",
+options: [
+"تحسين الاتصال",
+"إضعاف العلاقات",
+"زيادة النزاعات",
+"تشويش الرسائل"
+],
+answer: 0
+},
+
+{
+text: "لغة الجسد تمثل نسبة كبيرة من:",
+options: [
+"التواصل غير اللفظي",
+"التواصل الكتابي",
+"التواصل الرسمي",
+"التواصل الإعلامي"
+],
+answer: 0
+},
+
+{
+text: "من مهارات المتحدث الجيد:",
+options: [
+"وضوح الصوت",
+"تنظيم الأفكار",
+"التواصل البصري",
+"جميع ما سبق"
+],
+answer: 0
+},
+
+{
+text: "التشويش قد يكون:",
+options: [
+"داخلي أو خارجي",
+"خارجي فقط",
+"داخلي فقط",
+"غير موجود"
+],
+answer: 0
+},
+
+{
+text: "التغذية الراجعة تساعد في:",
+options: [
+"تحسين الرسالة",
+"إلغاء الاتصال",
+"زيادة الضوضاء",
+"إنهاء الحوار"
+],
+answer: 0
+},
+
+{
+text: "الاتصال الرسمي يكون:",
+options: [
+"وفق هيكل تنظيمي محدد",
+"عشوائي",
+"غير منظم",
+"بدون قواعد"
+],
+answer: 0
+},
+
+{
+text: "الاتصال غير الرسمي يسمى:",
+options: [
+"الشبكة الاجتماعية",
+"التسلسل الإداري",
+"القناة الرسمية",
+"الهيكل الإداري"
+],
+answer: 0
+},
+
+{
+text: "من صفات الرسالة الجيدة:",
+options: [
+"الدقة",
+"الوضوح",
+"الإيجاز",
+"جميع ما سبق"
+],
+answer: 0
+},
+
+{
+text: "الاتصال يساعد في:",
+options: [
+"اتخاذ القرار",
+"تعقيد العمل",
+"إضعاف الفريق",
+"تقليل المعلومات"
+],
+answer: 0
+},
+
+{
+text: "الاستماع يختلف عن السماع لأن:",
+options: [
+"الاستماع يتطلب تركيزًا",
+"لا فرق بينهما",
+"السماع أصعب",
+"الاستماع لا يحتاج اهتمام"
+],
+answer: 0
+},
+
+{
+text: "المهارات الاتصالية مهمة لـ:",
+options: [
+"القيادة",
+"العمل الجماعي",
+"حل المشكلات",
+"جميع ما سبق"
+],
+answer: 0
+},
+
+{
+text: "الاتصال في الأزمات يجب أن يكون:",
+options: [
+"سريعًا ودقيقًا",
+"غامضًا",
+"متأخرًا",
+"متناقضًا"
+],
+answer: 0
+},
+
+{
+text: "الرسالة الواضحة تقلل من:",
+options: [
+"سوء الفهم",
+"التعاون",
+"الفهم",
+"التنظيم"
+],
+answer: 0
+},
+
+{
+text: "الاحترام المتبادل يعزز:",
+options: [
+"الاتصال الفعال",
+"النزاعات",
+"الانقطاع",
+"الضوضاء"
+],
+answer: 0
+},
+
+{
+text: "التواصل البصري يدل على:",
+options: [
+"الاهتمام",
+"الملل",
+"عدم التركيز",
+"الانسحاب"
+],
+answer: 0
+},
+
+{
+text: "المقاطعة المستمرة تؤدي إلى:",
+options: [
+"إضعاف الاتصال",
+"تحسين الفهم",
+"تعزيز الحوار",
+"تقوية العلاقة"
+],
+answer: 0
+},
+
+{
+text: "التنظيم الجيد للأفكار يساعد في:",
+options: [
+"إيصال الرسالة بوضوح",
+"إرباك المستقبل",
+"تشويش الرسالة",
+"إلغاء التغذية الراجعة"
+],
+answer: 0
+},
+
+{
+text: "الاتصال الإلكتروني يشمل:",
+options: [
+"البريد الإلكتروني",
+"الاجتماع المباشر",
+"المحادثة الشفهية",
+"الندوة"
+],
+answer: 0
+},
+
+{
+text: "من مزايا الاتصال الكتابي:",
+options: [
+"إمكانية الرجوع إليه",
+"سريع جدًا دائمًا",
+"لا يحتاج تفكير",
+"غير رسمي"
+],
+answer: 0
+},
+
+{
+text: "الاتصال الفعال يؤدي إلى:",
+options: [
+"تحقيق الأهداف",
+"زيادة الأخطاء",
+"انخفاض الأداء",
+"تشتت الفريق"
+],
+answer: 0
+}
+
+];
